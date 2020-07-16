@@ -156,6 +156,11 @@ DEFINE_double(bundle_adjustment_robust_loss_width,
               "where the robust loss begins with respect to reprojection error "
               "in pixels.");
 
+// prior parameters
+DEFINE_double(focal_length_prior,
+             0.0,
+             "Set a prior focal length to initialize intrinsics with.");
+
 using theia::Reconstruction;
 using theia::ReconstructionBuilder;
 using theia::ReconstructionBuilderOptions;
@@ -284,6 +289,11 @@ int main(int argc, char* argv[]) {
   // parameter will not be used for calibration.
   theia::CameraIntrinsicsPrior prior;
   prior.camera_intrinsics_model_type = FLAGS_camera_model;
+
+  if (FLAGS_focal_length_prior != 0) {
+      prior.focal_length.is_set = true;
+      prior.focal_length.value[0] = FLAGS_focal_length_prior;
+  }
 
   // prior.image_width = 1920;
   // prior.image_height = 1080;

@@ -261,6 +261,11 @@ void FeatureExtractorAndMatcher::ProcessImage(const int i) {
       FindWithDefault(image_masks_, image_filepath, "");
 
   // Extract an EXIF focal length if it was not provided.
+  // there is a bug here, so that no image size info is obtained if a focal length prior is set!
+  // hack around it for now...setup a variable to grab exif data, but only keep size info...
+  CameraIntrinsicsPrior intrinsics_size;
+  CHECK(exif_reader_.ExtractEXIFMetadata(image_filepath, &intrinsics_size));
+
   if (!intrinsics.focal_length.is_set) {
     CHECK(exif_reader_.ExtractEXIFMetadata(image_filepath, &intrinsics));
 
@@ -273,6 +278,11 @@ void FeatureExtractorAndMatcher::ProcessImage(const int i) {
           1.2 * static_cast<double>(
                     std::max(intrinsics.image_width, intrinsics.image_height));
     }
+  }
+  // our hack to ensure that image size is recorded if a focal_length prior is set...
+  else {
+    intrinsics.image_width = intrinsics_size.image_width;  
+    intrinsics.image_height = intrinsics_size.image_height;
   }
 
   // Early exit if no EXIF calibration exists and we are only processing
